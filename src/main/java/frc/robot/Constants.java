@@ -9,8 +9,6 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.math.util.Units;
-
 public class Constants {
     public static class Vision {
         public static final String kCameraName = "MainCam";
@@ -26,9 +24,5 @@ public class Constants {
         // (Fake values. Experiment and determine estimation noise on an actual robot.)
         public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(4, 4, 8);
         public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 1);
-    }
-    public static class Field {
-        public static final double blueScoringRegionEnd = Units.inchesToMeters(181.56-58.41/2);
-        public static final double redScoringRegionEnd   = Units.inchesToMeters(650.12-(181.56-58.41/2));
     }
 }

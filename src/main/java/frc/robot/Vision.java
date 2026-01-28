@@ -1,10 +1,11 @@
 package frc.robot;
+
 import static frc.robot.Constants.Vision.*;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.util.List;
 import java.util.Optional;
@@ -17,36 +18,48 @@ public class Vision {
     private final PhotonCamera camera;
     private final PhotonPoseEstimator photonEstimator;
     private Matrix<N3, N1> curStdDevs;
-    public Vision() {
+
+    /**
+     * @param estConsumer Lamba that will accept a pose estimate and pass it to your
+     *                    desired {@link
+     *                    edu.wpi.first.math.estimator.SwerveDrivePoseEstimator}
+     */
+    public Vision(EstimateConsumer estConsumer) {
+        // Initialize the camera
         camera = new PhotonCamera(kCameraName);
+        // Initialize the vision pose estimator (seperate from the actual pose esimator
+        // used in swerve)
         photonEstimator = new PhotonPoseEstimator(kTagLayout, kRobotToCam);
     }
 
     public void periodic() {
         Optional<EstimatedRobotPose> visionEst = Optional.empty();
         for (var result : camera.getAllUnreadResults()) {
+            // Try this more accurate position estimator...
             visionEst = photonEstimator.estimateCoprocMultiTagPose(result);
             if (visionEst.isEmpty()) {
+                // ...and try this if it fails
                 visionEst = photonEstimator.estimateLowestAmbiguityPose(result);
             }
             updateEstimationStdDevs(visionEst, result.getTargets());
-            // DriverStation.reportWarning("Is Empty: " + visionEst.isEmpty(), false);
+            // Log robot's position
             visionEst.ifPresent(
                     est -> {
-                        SmartDashboard.putNumber("Pose x",est.estimatedPose.getX());
-                        SmartDashboard.putNumber("Pose y",est.estimatedPose.getY());
-                        SmartDashboard.putNumber("Pose rot",est.estimatedPose.getRotation().getAngle());
-                }
-            );
+                        SmartDashboard.putNumber("Pose x", est.estimatedPose.getX());
+                        SmartDashboard.putNumber("Pose y", est.estimatedPose.getY());
+                        SmartDashboard.putNumber("Pose rot", est.estimatedPose.getRotation().getAngle());
+                    });
         }
     }
 
     /**
-     * Calculates new standard deviations This algorithm is a heuristic that creates dynamic standard
-     * deviations based on number of tags, estimation strategy, and distance from the tags.
+     * Calculates new standard deviations This algorithm is a heuristic that creates
+     * dynamic standard
+     * deviations based on number of tags, estimation strategy, and distance from
+     * the tags.
      *
      * @param estimatedPose The estimated pose to guess standard deviations for.
-     * @param targets All targets in this camera frame
+     * @param targets       All targets in this camera frame
      */
     private void updateEstimationStdDevs(
             Optional<EstimatedRobotPose> estimatedPose, List<PhotonTrackedTarget> targets) {
@@ -60,17 +73,18 @@ public class Vision {
             int numTags = 0;
             double avgDist = 0;
 
-            // Precalculation - see how many tags we found, and calculate an average-distance metric
+            // Precalculation - see how many tags we found, and calculate an
+            // average-distance metric
             for (var tgt : targets) {
                 var tagPose = photonEstimator.getFieldTags().getTagPose(tgt.getFiducialId());
-                if (tagPose.isEmpty()) continue;
+                if (tagPose.isEmpty())
+                    continue;
                 numTags++;
-                avgDist +=
-                        tagPose
-                                .get()
-                                .toPose2d()
-                                .getTranslation()
-                                .getDistance(estimatedPose.get().estimatedPose.toPose2d().getTranslation());
+                avgDist += tagPose
+                        .get()
+                        .toPose2d()
+                        .getTranslation()
+                        .getDistance(estimatedPose.get().estimatedPose.toPose2d().getTranslation());
             }
 
             if (numTags == 0) {
@@ -80,11 +94,13 @@ public class Vision {
                 // One or more tags visible, run the full heuristic.
                 avgDist /= numTags;
                 // Decrease std devs if multiple targets are visible
-                if (numTags > 1) estStdDevs = kMultiTagStdDevs;
+                if (numTags > 1)
+                    estStdDevs = kMultiTagStdDevs;
                 // Increase std devs based on (average) distance
                 if (numTags == 1 && avgDist > 4)
                     estStdDevs = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
-                else estStdDevs = estStdDevs.times(1 + (avgDist * avgDist / 30));
+                else
+                    estStdDevs = estStdDevs.times(1 + (avgDist * avgDist / 30));
                 curStdDevs = estStdDevs;
             }
         }
@@ -93,10 +109,17 @@ public class Vision {
     /**
      * Returns the latest standard deviations of the estimated pose from {@link
      * #getEstimatedGlobalPose()}, for use with {@link
-     * edu.wpi.first.math.estimator.SwerveDrivePoseEstimator SwerveDrivePoseEstimator}. This should
+     * edu.wpi.first.math.estimator.SwerveDrivePoseEstimator
+     * SwerveDrivePoseEstimator}. This should
      * only be used when there are targets visible.
      */
     public Matrix<N3, N1> getEstimationStdDevs() {
         return curStdDevs;
     }
+
+    @FunctionalInterface
+    public static interface EstimateConsumer {
+        public void accept(Pose2d pose, double timestamp, Matrix<N3, N1> estimationStdDevs);
+    }
+
 }
