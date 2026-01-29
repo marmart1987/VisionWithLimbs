@@ -18,7 +18,7 @@ public class Vision {
     private final PhotonCamera camera;
     private final PhotonPoseEstimator photonEstimator;
     private Matrix<N3, N1> curStdDevs;
-
+    private EstimateConsumer estConsumer;
     /**
      * @param estConsumer Lamba that will accept a pose estimate and pass it to your
      *                    desired {@link
@@ -30,6 +30,7 @@ public class Vision {
         // Initialize the vision pose estimator (seperate from the actual pose esimator
         // used in swerve)
         photonEstimator = new PhotonPoseEstimator(kTagLayout, kRobotToCam);
+        this.estConsumer=estConsumer;
     }
 
     public void periodic() {
@@ -45,6 +46,11 @@ public class Vision {
             // Log robot's position
             visionEst.ifPresent(
                     est -> {
+                         // Change our trust in the measurement based on the tags we can see
+                        var estStdDevs = getEstimationStdDevs();
+
+                        estConsumer.accept(est.estimatedPose.toPose2d(), est.timestampSeconds, estStdDevs);
+
                         SmartDashboard.putNumber("Pose x", est.estimatedPose.getX());
                         SmartDashboard.putNumber("Pose y", est.estimatedPose.getY());
                         SmartDashboard.putNumber("Pose rot", est.estimatedPose.getRotation().getAngle());
@@ -113,7 +119,8 @@ public class Vision {
      * SwerveDrivePoseEstimator}. This should
      * only be used when there are targets visible.
      */
-    public Matrix<N3, N1> getEstimationStdDevs() {
+    // @Override
+    private Matrix<N3, N1> getEstimationStdDevs() {
         return curStdDevs;
     }
 

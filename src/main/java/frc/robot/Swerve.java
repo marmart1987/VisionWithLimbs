@@ -11,11 +11,13 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.wpilibj.DriverStation;
+// import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Swerve extends SubsystemBase {
     public AHRS m_gyro;
-    public final SwerveDrivePoseEstimator poseEstimator;
+    // public final SwerveDrivePoseEstimator poseEstimator;
 
     // Construct the swerve modules with their respective constants.
     // The SwerveModule class will handle all the details of controlling the
@@ -27,12 +29,12 @@ public class Swerve extends SubsystemBase {
     // new SwerveModule(ModuleConstants.BR)
     // };
 
-    private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(
+    // private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(
     // swerveMods[0].getModuleConstants().centerOffset,
     // swerveMods[1].getModuleConstants().centerOffset,
     // swerveMods[2].getModuleConstants().centerOffset,
     // swerveMods[3].getModuleConstants().centerOffset
-    );
+    // );
 
     public Swerve() {
         m_gyro = new AHRS(NavXComType.kUSB1);
@@ -44,15 +46,16 @@ public class Swerve extends SubsystemBase {
         // are applied to the pose estimator.
         var stateStdDevs = VecBuilder.fill(0.1, 0.1, 0.1);
         var visionStdDevs = VecBuilder.fill(1, 1, 1);
-        poseEstimator = new SwerveDrivePoseEstimator(kinematics, getGyroYaw(), getModulePositions(), new Pose2d(),
-                stateStdDevs,
-                visionStdDevs);
+        // poseEstimator = new SwerveDrivePoseEstimator(kinematics, getGyroYaw(), getModulePositions(), new Pose2d(),
+                // stateStdDevs,
+                // visionStdDevs);
         m_gyro.getAngle();
     }
 
     public void periodic() {
         // Update the odometry of the swerve drive using the wheel encoders and gyro.
-        poseEstimator.update(getGyroYaw(), getModulePositions());
+        // poseEstimator.update(getGyroYaw(), getModulePositions());
+        System.out.println("Measurements: " + m_gyro.getAngle());
     }
 
     public SwerveModulePosition[] getModulePositions() {
@@ -74,7 +77,9 @@ public class Swerve extends SubsystemBase {
      * See {@link SwerveDrivePoseEstimator#addVisionMeasurement(Pose2d, double)}.
      */
     public void addVisionMeasurement(Pose2d visionMeasurement, double timestampSeconds) {
-        poseEstimator.addVisionMeasurement(visionMeasurement, timestampSeconds);
+        // poseEstimator.addVisionMeasurement(visionMeasurement, timestampSeconds);
+        DriverStation.reportWarning("" + visionMeasurement.getX(), false);
+
     }
 
     /**
@@ -83,7 +88,8 @@ public class Swerve extends SubsystemBase {
      */
     public void addVisionMeasurement(
             Pose2d visionMeasurement, double timestampSeconds, Matrix<N3, N1> stdDevs) {
-        poseEstimator.addVisionMeasurement(visionMeasurement, timestampSeconds, stdDevs);
+        // poseEstimator.addVisionMeasurement(visionMeasurement, timestampSeconds, stdDevs);
+        DriverStation.reportWarning("" + visionMeasurement.getX(), false);
     }
 
 }
