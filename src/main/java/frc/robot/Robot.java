@@ -1,4 +1,5 @@
 package frc.robot;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 
 public class Robot extends TimedRobot {
@@ -12,5 +13,6 @@ public class Robot extends TimedRobot {
     @Override
     public void robotPeriodic() {
         vision.periodic();
+        DriverStation.reportWarning("X Position: " + drivetrain.poseEstimator.getEstimatedPosition().getX(), false);
     }
 }
