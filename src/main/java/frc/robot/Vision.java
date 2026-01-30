@@ -51,9 +51,6 @@ public class Vision {
 
                         estConsumer.accept(est.estimatedPose.toPose2d(), est.timestampSeconds, estStdDevs);
 
-                        SmartDashboard.putNumber("Pose x", est.estimatedPose.getX());
-                        SmartDashboard.putNumber("Pose y", est.estimatedPose.getY());
-                        SmartDashboard.putNumber("Pose rot", est.estimatedPose.getRotation().getAngle());
                     });
         }
     }
