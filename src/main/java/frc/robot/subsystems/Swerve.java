@@ -1,5 +1,9 @@
 package frc.robot.subsystems;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
 
@@ -40,6 +44,7 @@ public class Swerve extends SubsystemBase {
             swerveMods[1].getModuleConstants().centerOffset,
             swerveMods[2].getModuleConstants().centerOffset,
             swerveMods[3].getModuleConstants().centerOffset);
+    public boolean autoOnSuccess = false;
 
     public Swerve() {
         // Initialize the gyro (NavX) on the USB port.
@@ -67,11 +72,62 @@ public class Swerve extends SubsystemBase {
         poseEstimator = new SwerveDrivePoseEstimator(kinematics, getGyroYaw(), getModulePositions(), new Pose2d(),
                 stateStdDevs,
                 visionStdDevs);
+
+        RobotConfig config;
+        try {
+            config = RobotConfig.fromGUISettings();
+            AutoBuilder.configure(
+                    this::getEstimatedPose, // Robot pose supplier
+                    this::resetPoseEstimator, // Method to reset odometry (will be called if your auto has a starting
+                                              // pose)
+                    this::getRobotRelativeSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+                    (speeds, feedforwards) -> driveRobotRelative(speeds), // Method that will drive the robot given
+                                                                          // ROBOT RELATIVE ChassisSpeeds. Also
+                                                                          // optionally outputs individual module
+                                                                          // feedforwards
+                    new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller
+                                                    // for holonomic drive trains
+                            new PIDConstants(0.04, 0.0, 0.0), // Translation PID constants
+                            new PIDConstants(1, 0.0, 0.0) // Rotation PID constants
+                    ),
+                    config, // The robot configuration
+                    () -> {
+                        // Boolean supplier that controls when the path will be mirrored for the red
+                        // alliance
+                        // This will flip the path being followed to the red side of the field.
+                        // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+
+                        var alliance = DriverStation.getAlliance();
+                        if (alliance.isPresent()) {
+                            return alliance.get() == DriverStation.Alliance.Red;
+                        }
+                        return false;
+                    },
+                    this // Reference to this subsystem to set requirements
+            );
+            autoOnSuccess = true;
+        } catch (Exception e) {
+            // Handle exception as needed
+            e.printStackTrace();
+        }
     }
 
     public void periodic() {
         // Update the pose estimator using the wheel encoders and gyro.
         poseEstimator.update(getGyroYaw(), getModulePositions());
+
+        SmartDashboard.putNumber("Mod 0 Cancoder", swerveMods[0].getCanCoder().getDegrees());
+        SmartDashboard.putNumber("Mod 0 Encoder", swerveMods[0].getEncoderPosition());
+        SmartDashboard.putNumber("Mod 1 Cancoder", swerveMods[1].getCanCoder().getDegrees());
+        SmartDashboard.putNumber("Mod 1 Encoder", swerveMods[1].getEncoderPosition());
+        SmartDashboard.putNumber("Mod 2 Cancoder", swerveMods[2].getCanCoder().getDegrees());
+        SmartDashboard.putNumber("Mod 2 Encoder", swerveMods[2].getEncoderPosition());
+        SmartDashboard.putNumber("Mod 3 Cancoder", swerveMods[3].getCanCoder().getDegrees());
+        SmartDashboard.putNumber("Mod 3 Encoder", swerveMods[3].getEncoderPosition());
+        SmartDashboard.putNumber("Mod 0 RotVal", swerveMods[0].getRotVal());
+        SmartDashboard.putNumber("Mod 0 EncoderPosition", swerveMods[0].getEncoderPosition());
+        SmartDashboard.putNumber("Gyro", getGyroYaw().getDegrees());
+        SmartDashboard.putBoolean("AutoOnSuccess", autoOnSuccess);
     }
 
     public SwerveModuleState[] getModuleStates() {
@@ -104,6 +160,7 @@ public class Swerve extends SubsystemBase {
     public void zeroGyro() {
         m_gyro.zeroYaw();
     }
+
     /**
      * 
      * @return The current yaw of the robot from the gyro as a Rotation2d.
@@ -140,6 +197,7 @@ public class Swerve extends SubsystemBase {
     public Pose2d getEstimatedPose() {
         return poseEstimator.getEstimatedPosition();
     }
+
     /**
      * Resets the pose estimator to the specified pose.
      * 
@@ -151,6 +209,7 @@ public class Swerve extends SubsystemBase {
                 getModulePositions(),
                 pose);
     }
+
     /**
      * Zeros the robot's heading and resets the pose estimator to the current
      * estimated pose.
@@ -159,6 +218,7 @@ public class Swerve extends SubsystemBase {
         resetPoseEstimator(getEstimatedPose());
         m_gyro.reset();
     }
+
     /**
      * 
      * @return The current heading of the robot in degrees.
@@ -166,12 +226,22 @@ public class Swerve extends SubsystemBase {
     public double getHeading() {
         return getGyroYaw().getDegrees();
     }
+
     /**
      * 
      * @return The current robot-relative chassis speeds as a ChassisSpeeds object.
      */
     public ChassisSpeeds getRobotRelativeSpeeds() {
         return kinematics.toChassisSpeeds(getModuleStates());
+    }
+
+    public void driveRobotRelative(ChassisSpeeds speeds) {
+        SwerveModuleState[] states = kinematics.toSwerveModuleStates(speeds);
+        SwerveDriveKinematics.desaturateWheelSpeeds(states, Constants.Swerve.kMaxSpeedMetersPerSecond);
+        swerveMods[0].setDesiredState(states[0]);
+        swerveMods[1].setDesiredState(states[1]);
+        swerveMods[2].setDesiredState(states[2]);
+        swerveMods[3].setDesiredState(states[3]);
     }
 
     /**

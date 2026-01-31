@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.Swerve;
 import edu.wpi.first.wpilibj.Timer;
@@ -20,6 +21,8 @@ public class Robot extends TimedRobot {
     private final DifferentialDrive m_robotDrive = new DifferentialDrive(m_leftDrive::set, m_rightDrive::set);
     private final XboxController m_controller = new XboxController(0);
     private final Timer m_timer = new Timer();
+    private Command m_autonomousCommand;
+    private RobotContainer m_RobotContainer;
 
     @Override
     public void robotInit() {
@@ -33,6 +36,8 @@ public class Robot extends TimedRobot {
         // result in both sides moving forward. Depending on how your robot's
         // gearbox is constructed, you might have to invert the left side instead.
         m_rightDrive.setInverted(true);
+
+        m_RobotContainer = new RobotContainer();
     }
 
     @Override
@@ -51,17 +56,33 @@ public class Robot extends TimedRobot {
     @Override
     public void autonomousInit() {
         m_timer.restart();
+        m_autonomousCommand = m_RobotContainer.getAutonomousCommand();
+
+        // schedule the autonomous command (example)
+        if (m_autonomousCommand != null) {
+            m_autonomousCommand.schedule();
+        }
     }
 
     /** This function is called periodically during autonomous. */
-    @Override   
+    @Override
     public void autonomousPeriodic() {
-        // Drive for 2 seconds
-        if (m_timer.get() < 2.0) {
-            // Drive forwards half speed, make sure to turn input squaring off
-            m_robotDrive.arcadeDrive(0.5, 0.0, false);
-        } else {
-            m_robotDrive.stopMotor(); // stop robot
+        // // Drive for 2 seconds
+        // if (m_timer.get() < 2.0) {
+        // // Drive forwards half speed, make sure to turn input squaring off
+        // m_robotDrive.arcadeDrive(0.5, 0.0, false);
+        // } else {
+        // m_robotDrive.stopMotor(); // stop robot
+        // }
+    }
+
+    /**
+     * This function is called once each time the robot enters teleoperated mode.
+     */
+    @Override
+    public void teleopInit() {
+        if (m_autonomousCommand != null) {
+            m_autonomousCommand.cancel();
         }
     }
 
@@ -70,4 +91,5 @@ public class Robot extends TimedRobot {
     public void teleopPeriodic() {
         m_robotDrive.arcadeDrive(-m_controller.getLeftY(), -m_controller.getRightX());
     }
+
 }

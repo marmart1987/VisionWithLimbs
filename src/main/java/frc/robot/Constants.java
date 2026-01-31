@@ -24,16 +24,19 @@ public class Constants {
                 public static final double kMaxAngularSpeed = Units.rotationsToRadians(2);
                 public static final double kTrackWidth = Units.inchesToMeters(19);
                 public static final double kTrackLength = Units.inchesToMeters(20.75);
+
+                // public static final double stickDeadband = 0.1;
+
                 public enum ModuleConstants {
                         // Configuration for each swerve module
                         FL( // Front left
-                                        10, 20, 0, 1.098330, kTrackLength / 2, kTrackWidth / 2),
+                                        10, 20, 0, 1.095262, kTrackLength / 2, kTrackWidth / 2),
                         FR( // Front Right
-                                        11, 21, 1, 2.558680, kTrackLength / 2, -kTrackWidth / 2),
+                                        11, 21, 1, 2.543340, kTrackLength / 2, -kTrackWidth / 2),
                         BL( // Back Left
-                                        12, 22, 2, -0.720971, -kTrackLength / 2, kTrackWidth / 2),
+                                        12, 22, 2, -0.708699, -kTrackLength / 2, kTrackWidth / 2),
                         BR( // Back Right
-                                        13, 23, 3, -2.416020, -kTrackLength / 2, -kTrackWidth / 2);
+                                        13, 23, 3, -2.411418, -kTrackLength / 2, -kTrackWidth / 2);
 
                         public final int drivermotorID0;
                         public final int anglemotorID0;
@@ -75,7 +78,6 @@ public class Constants {
                 public static final double kWheelCircumferenceMeters = kWheelDiameterMeters * Math.PI;
                 public static final double kDrivingMotorReduction = (45.0 * 22) / (kDrivingMotorPinionTeeth * 15);
 
-                
                 public static final double kDriveWheelFreeSpeedRps = (kDrivingMotorFreeSpeedRps
                                 * kWheelCircumferenceMeters)
                                 / kDrivingMotorReduction;
