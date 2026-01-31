@@ -6,7 +6,6 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.util.List;
 import java.util.Optional;
 import org.photonvision.EstimatedRobotPose;
@@ -15,10 +14,15 @@ import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 public class Vision {
+    // PhotonVision camera object
     private final PhotonCamera camera;
+    // Vision pose estimator
     private final PhotonPoseEstimator photonEstimator;
+    // Current standard deviations for vision pose estimates
     private Matrix<N3, N1> curStdDevs;
+    // Consumer that will accept pose estimates
     private EstimateConsumer estConsumer;
+
     /**
      * @param estConsumer Lamba that will accept a pose estimate and pass it to your
      *                    desired {@link
@@ -30,11 +34,12 @@ public class Vision {
         // Initialize the vision pose estimator (seperate from the actual pose esimator
         // used in swerve)
         photonEstimator = new PhotonPoseEstimator(kTagLayout, kRobotToCam);
-        this.estConsumer=estConsumer;
+        this.estConsumer = estConsumer;
     }
 
     public void periodic() {
         Optional<EstimatedRobotPose> visionEst = Optional.empty();
+        //Process each new result from the camera
         for (var result : camera.getAllUnreadResults()) {
             // Try this more accurate position estimator...
             visionEst = photonEstimator.estimateCoprocMultiTagPose(result);
@@ -42,15 +47,15 @@ public class Vision {
                 // ...and try this if it fails
                 visionEst = photonEstimator.estimateLowestAmbiguityPose(result);
             }
+            // Update our standard deviations based on the result
             updateEstimationStdDevs(visionEst, result.getTargets());
-            // Log robot's position
+            // If we have a valid estimate, use it
             visionEst.ifPresent(
                     est -> {
-                         // Change our trust in the measurement based on the tags we can see
+                        // Change our trust in the measurement based on the tags we can see
                         var estStdDevs = getEstimationStdDevs();
-
+                        // Pass the result to the consumer (swerve pose estimator)
                         estConsumer.accept(est.estimatedPose.toPose2d(), est.timestampSeconds, estStdDevs);
-
                     });
         }
     }

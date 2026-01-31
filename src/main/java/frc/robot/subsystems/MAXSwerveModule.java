@@ -9,8 +9,6 @@ import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import com.ctre.phoenix6.hardware.CANcoder;
-
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -19,33 +17,34 @@ import frc.robot.Constants;
 import frc.robot.Constants.Swerve.ModuleConstants;
 
 public class MAXSwerveModule {
+    // Motors
     private SparkMax m_drivingSpark;
     private SparkMax m_turningSpark;
-    private final ModuleConstants moduleConstants;
-
+    
+    //Motor Encoders
     private RelativeEncoder m_drivingEncoder;
     private RelativeEncoder m_turningEncoder;
+
+    // Configuration object containing motor IDs, offsets, etc.
+    private final ModuleConstants moduleConstants;
 
     private final SparkClosedLoopController m_drivingClosedLoopController;
     private final SparkClosedLoopController m_turningClosedLoopController;
 
     private CANcoder angleEncoder;
-
     private double m_chassisAngularOffset = 0;
     private double rotval = 0;
 
     public MAXSwerveModule(ModuleConstants moduleConstants) {
+        // Initialize motors and encoders using constants
         this.moduleConstants = moduleConstants;
-        // int drivingCANId, int turningCANId, int cancoderId, double
-        // chassisAngularOffset
-
-        m_drivingSpark = new SparkMax(this.moduleConstants.drivermotorID0, MotorType.kBrushless);
-        m_turningSpark = new SparkMax(this.moduleConstants.anglemotorID0, MotorType.kBrushless);
+        m_drivingSpark = new SparkMax(moduleConstants.drivermotorID0, MotorType.kBrushless);
+        m_turningSpark = new SparkMax(moduleConstants.anglemotorID0, MotorType.kBrushless);
 
         m_drivingClosedLoopController = m_drivingSpark.getClosedLoopController();
         m_turningClosedLoopController = m_turningSpark.getClosedLoopController();
 
-        angleEncoder = new CANcoder(this.moduleConstants.camcoderID);
+        angleEncoder = new CANcoder(moduleConstants.camcoderID);
         configEncoders();
 
         m_turningSpark.configure(Configs.MAXSwerveModule.turningConfig, ResetMode.kNoResetSafeParameters,
@@ -56,11 +55,10 @@ public class MAXSwerveModule {
         m_chassisAngularOffset = this.moduleConstants.offset0;
 
         resetToAbsolute();
-
     }
 
     /**
-     * Constants about this module like motor IDs.
+     * Constants about this module like motor IDs and offsets.
      */
     public ModuleConstants getModuleConstants() {
         return moduleConstants;
@@ -127,5 +125,4 @@ public class MAXSwerveModule {
     public double getRotVal() {
         return rotval;
     }
-
 }
