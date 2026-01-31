@@ -22,8 +22,10 @@ public class Constants {
                                 .SDSMK4i(driveGearRatios.SDSMK4i_L2);
                 public static final double angleGearRatio = chosenModule.angleGearRatio;
                 public static final double kMaxSpeedMetersPerSecond = 4.8;
-                public static final double kTrackWidth = Units.inchesToMeters(18.5);
-                public static final double kTrackLength = Units.inchesToMeters(18.5);
+
+                public static final boolean invertGyro = true; // Always ensure Gyro is CCW+ CW-
+                public static final double kTrackWidth = Units.inchesToMeters(19);
+                public static final double kTrackLength = Units.inchesToMeters(20.75);
                 public static final double kRobotWidth = Units.inchesToMeters(25 + 3.25 * 2);
                 public static final double kRobotLength = Units.inchesToMeters(25 + 3.25 * 2);
                 public static final double kMaxLinearSpeed = Units.feetToMeters(15.5);
@@ -40,14 +42,13 @@ public class Constants {
                 public enum ModuleConstants {
                         // Configuration for each swerve module
                         FL( // Front left
-                                        10, 20, 0, 0, kTrackLength / 2, kTrackWidth / 2),
+                                        10, 20, 0, 1.098330, kTrackLength / 2, kTrackWidth / 2),
                         FR( // Front Right
-                                        11, 21, 1, 0, kTrackLength / 2, -kTrackWidth / 2),
+                                        11, 21, 1, 2.558680, kTrackLength / 2, -kTrackWidth / 2),
                         BL( // Back Left
-                                        12, 22, 2, 0, -kTrackLength / 2, kTrackWidth / 2),
+                                        12, 22, 2, -0.720971, -kTrackLength / 2, kTrackWidth / 2),
                         BR( // Back Right
-                                        13, 23, 3, 0, -kTrackLength / 2, -kTrackWidth / 2);
-
+                                        13, 23, 3, -2.416020, -kTrackLength / 2, -kTrackWidth / 2);
 
                         public final int drivermotorID0;
                         public final int anglemotorID0;
@@ -57,12 +58,13 @@ public class Constants {
 
                         /**
                          * Constructor for module constants
+                         * 
                          * @param drivermotorID0 Driver motor ID
-                         * @param anglemotorID0 Angle motor ID
-                         * @param camcoderID CANCoder ID
-                         * @param offset0 Angle offset
-                         * @param xOffset X offset from robot center
-                         * @param yOffset Y offset from robot center
+                         * @param anglemotorID0  Angle motor ID
+                         * @param camcoderID     CANCoder ID
+                         * @param offset0        Angle offset
+                         * @param xOffset        X offset from robot center
+                         * @param yOffset        Y offset from robot center
                          */
                         private ModuleConstants(
                                         int drivermotorID0,

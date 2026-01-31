@@ -8,7 +8,7 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import frc.robot.Constants.MotorConstants;
 
 public class Configs {
-        
+
         // Configuration class for MAX Swerve Modules
         public static final class MAXSwerveModule {
                 // Driving Motor Configuration
@@ -25,7 +25,7 @@ public class Configs {
                         double turningFactor = 2 * Math.PI;
                         double drivingVelocityFeedForward = 1 / MotorConstants.kDriveWheelFreeSpeedRps;
 
-                        //Configure Driving Motor
+                        // Configure Driving Motor
                         drivingConfig
                                         .idleMode(IdleMode.kBrake)
                                         .smartCurrentLimit(40);
@@ -38,19 +38,14 @@ public class Configs {
                                         .velocityFF(drivingVelocityFeedForward)
                                         .outputRange(-1, 1);
 
-
-                        //Configure Turning Motor
+                        // Configure Turning Motor
                         turningConfig
                                         .idleMode(IdleMode.kBrake)
                                         .smartCurrentLimit(20)
                                         .inverted(true);
                         turningConfig.encoder
-                                        .positionConversionFactor(((1.95) * Math.PI) / Constants.Swerve.angleGearRatio)
-                                        .velocityConversionFactor((Math.PI / 2) / Constants.Swerve.angleGearRatio / 60);
-                        turningConfig.absoluteEncoder
-                                        .inverted(true)
-                                        .positionConversionFactor(turningFactor)
-                                        .velocityConversionFactor(turningFactor / 60.0);
+                                        .positionConversionFactor((2 * Math.PI) / Constants.Swerve.angleGearRatio)
+                                        .velocityConversionFactor((2 * Math.PI) / Constants.Swerve.angleGearRatio / 60);
                         turningConfig.closedLoop
                                         .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
                                         .pid(1, 0, 0)
@@ -58,6 +53,6 @@ public class Configs {
                                         .positionWrappingEnabled(true)
                                         .positionWrappingInputRange(0, turningFactor);
                 }
-        }
 
+        }
 }

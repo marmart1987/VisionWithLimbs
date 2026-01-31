@@ -20,8 +20,8 @@ public class MAXSwerveModule {
     // Motors
     private SparkMax m_drivingSpark;
     private SparkMax m_turningSpark;
-    
-    //Motor Encoders
+
+    // Motor Encoders
     private RelativeEncoder m_drivingEncoder;
     private RelativeEncoder m_turningEncoder;
 
@@ -33,6 +33,7 @@ public class MAXSwerveModule {
 
     private CANcoder angleEncoder;
     private double m_chassisAngularOffset = 0;
+    private SwerveModuleState m_desiredState = new SwerveModuleState(0.0, new Rotation2d());
     private double rotval = 0;
 
     public MAXSwerveModule(ModuleConstants moduleConstants) {
@@ -55,6 +56,8 @@ public class MAXSwerveModule {
         m_chassisAngularOffset = this.moduleConstants.offset0;
 
         resetToAbsolute();
+
+        m_desiredState.angle = new Rotation2d(m_turningEncoder.getPosition());
     }
 
     /**
@@ -83,14 +86,22 @@ public class MAXSwerveModule {
         return new SwerveModulePosition(m_drivingEncoder.getPosition(), getAngle());
     }
 
+    public double getEncoderPosition() {
+        return m_turningEncoder.getPosition();
+    }
+
     public SwerveModuleState getState() {
         return new SwerveModuleState(m_drivingEncoder.getVelocity(), getAngle());
     }
 
     public void setDesiredState(SwerveModuleState desiredState) {
-        SmartDashboard.putNumber("Desired Angle", desiredState.angle.getDegrees());
-        setAngle(desiredState);
-        setSpeed(desiredState, true);
+        SwerveModuleState correctedDesiredState = new SwerveModuleState();
+        correctedDesiredState.speedMetersPerSecond = desiredState.speedMetersPerSecond;
+        correctedDesiredState.angle = desiredState.angle;
+        correctedDesiredState.optimize(new Rotation2d(m_turningEncoder.getPosition()));
+
+        setAngle(correctedDesiredState);
+        setSpeed(correctedDesiredState, true);
     }
 
     private Rotation2d getAngle() {
