@@ -47,6 +47,7 @@ public class Vision {
                 // ...and try this if it fails
                 visionEst = photonEstimator.estimateLowestAmbiguityPose(result);
             }
+            
             // Update our standard deviations based on the result
             updateEstimationStdDevs(visionEst, result.getTargets());
             // If we have a valid estimate, use it

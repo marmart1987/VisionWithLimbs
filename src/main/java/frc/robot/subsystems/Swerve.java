@@ -1,4 +1,4 @@
-package frc.robot;
+package frc.robot.subsystems;
 
 import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
@@ -18,7 +18,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.subsystems.MAXSwerveModule;
+import frc.robot.Constants;
 
 public class Swerve extends SubsystemBase {
     public AHRS m_gyro;
@@ -74,11 +74,13 @@ public class Swerve extends SubsystemBase {
         poseEstimator.update(getGyroYaw(), getModulePositions());
     }
 
-    /**
-     * Zeros the gyro yaw to reset the robot's heading to zero.
-     */
-    public void zeroGyro() {
-        m_gyro.zeroYaw();
+    public SwerveModuleState[] getModuleStates() {
+        SwerveModuleState[] states = new SwerveModuleState[4];
+        states[0] = swerveMods[0].getState();
+        states[1] = swerveMods[1].getState();
+        states[2] = swerveMods[2].getState();
+        states[3] = swerveMods[3].getState();
+        return states;
     }
 
     /**
@@ -96,6 +98,12 @@ public class Swerve extends SubsystemBase {
         return positions;
     }
 
+    /**
+     * Zeros the gyro yaw to reset the robot's heading to zero.
+     */
+    public void zeroGyro() {
+        m_gyro.zeroYaw();
+    }
     /**
      * 
      * @return The current yaw of the robot from the gyro as a Rotation2d.
@@ -132,36 +140,50 @@ public class Swerve extends SubsystemBase {
     public Pose2d getEstimatedPose() {
         return poseEstimator.getEstimatedPosition();
     }
-
+    /**
+     * Resets the pose estimator to the specified pose.
+     * 
+     * @param pose The pose to reset the estimator to.
+     */
     public void resetPoseEstimator(Pose2d pose) {
         poseEstimator.resetPosition(
                 getGyroYaw(),
                 getModulePositions(),
                 pose);
     }
-
+    /**
+     * Zeros the robot's heading and resets the pose estimator to the current
+     * estimated pose.
+     */
     public void zeroHeading() {
         resetPoseEstimator(getEstimatedPose());
         m_gyro.reset();
     }
-
+    /**
+     * 
+     * @return The current heading of the robot in degrees.
+     */
     public double getHeading() {
         return getGyroYaw().getDegrees();
     }
-
+    /**
+     * 
+     * @return The current robot-relative chassis speeds as a ChassisSpeeds object.
+     */
     public ChassisSpeeds getRobotRelativeSpeeds() {
         return kinematics.toChassisSpeeds(getModuleStates());
     }
 
-    public SwerveModuleState[] getModuleStates() {
-        SwerveModuleState[] states = new SwerveModuleState[4];
-        states[0] = swerveMods[0].getState();
-        states[1] = swerveMods[1].getState();
-        states[2] = swerveMods[2].getState();
-        states[3] = swerveMods[3].getState();
-        return states;
-    }
-
+    /**
+     * Method to drive the robot using swerve kinematics.
+     * 
+     * @param xSpeed        The speed in the x direction (forward) as a fraction of
+     *                      max speed.
+     * @param ySpeed        The speed in the y direction (sideways) as a fraction of
+     *                      max speed.
+     * @param rot           The rotational speed as a fraction of max angular speed.
+     * @param fieldRelative Whether the speeds are field-relative or robot-relative.
+     */
     public void drive(double xSpeed, double ySpeed, double rot, boolean fieldRelative) {
         double xSpeedDelivered = xSpeed * Constants.Swerve.kMaxSpeedMetersPerSecond;
         double ySpeedDelivered = ySpeed * Constants.Swerve.kMaxSpeedMetersPerSecond;

@@ -7,7 +7,6 @@ import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import com.ctre.phoenix6.hardware.CANcoder;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -66,7 +65,6 @@ public class MAXSwerveModule {
     public ModuleConstants getModuleConstants() {
         return moduleConstants;
     }
-
     private void configEncoders() {
         angleEncoder.getConfigurator().apply(Configs.MAXSwerveModule.swerveCANcoderconfig);
 
@@ -76,24 +74,40 @@ public class MAXSwerveModule {
         m_turningEncoder = m_turningSpark.getEncoder();
 
     }
-
+    /**
+     * Sets the turning encoder to the absolute position of the CANCoder minus the
+     * chassis angular offset.
+     */
     public void resetToAbsolute() {
         double absolutePosition = getCanCoder().getDegrees() - m_chassisAngularOffset;
         m_turningEncoder.setPosition(absolutePosition);
     }
-
+    /**
+     * 
+     * @return The current position of the swerve module as a SwerveModulePosition.
+     */
     public SwerveModulePosition getPosition() {
         return new SwerveModulePosition(m_drivingEncoder.getPosition(), getAngle());
     }
-
+    /**
+     * 
+     * @return The current position of the turning encoder in degrees.
+     */
     public double getEncoderPosition() {
         return m_turningEncoder.getPosition();
     }
-
+    /**
+     * 
+     * @return The current state of the swerve module as a SwerveModuleState.
+     */
     public SwerveModuleState getState() {
         return new SwerveModuleState(m_drivingEncoder.getVelocity(), getAngle());
     }
-
+    /**
+     * Sets the desired state of the swerve module.
+     * 
+     * @param desiredState The desired state to set.
+     */
     public void setDesiredState(SwerveModuleState desiredState) {
         SwerveModuleState correctedDesiredState = new SwerveModuleState();
         correctedDesiredState.speedMetersPerSecond = desiredState.speedMetersPerSecond;
@@ -103,15 +117,25 @@ public class MAXSwerveModule {
         setAngle(correctedDesiredState);
         setSpeed(correctedDesiredState, true);
     }
-
+    /**
+     * 
+     * @return The current angle of the swerve module as a Rotation2d.
+     */
     private Rotation2d getAngle() {
         return Rotation2d.fromDegrees(m_turningEncoder.getPosition());
     }
-
+    /**
+     * 
+     * @return The absolute position of the CANCoder as a Rotation2d.
+     */
     public Rotation2d getCanCoder() {
         return Rotation2d.fromRotations(angleEncoder.getAbsolutePosition().getValueAsDouble());
     }
-
+    /**
+     * Sets the angle of the swerve module.
+     * 
+     * @param desiredState The desired state to set the angle to.
+     */
     private void setAngle(SwerveModuleState desiredState) {
 
         if (Math.abs(desiredState.speedMetersPerSecond) <= (Constants.Swerve.kMaxAngularSpeed * 0.01)) {
@@ -122,7 +146,12 @@ public class MAXSwerveModule {
 
         m_turningClosedLoopController.setReference(rotval, ControlType.kPosition);
     }
-
+    /**
+     * Sets the speed of the swerve module.
+     * 
+     * @param desiredState The desired state to set the speed to.
+     * @param isOpenLoop   Whether to use open-loop control or closed-loop control.
+     */
     private void setSpeed(SwerveModuleState desiredState, boolean isOpenLoop) {
 
         if (isOpenLoop) {
@@ -132,7 +161,11 @@ public class MAXSwerveModule {
         }
         m_drivingClosedLoopController.setReference(desiredState.speedMetersPerSecond, ControlType.kVelocity);
     }
-
+    /**
+     * 
+     * @return The current rotational value setpoint of the swerve module in
+     *         radians.
+     */
     public double getRotVal() {
         return rotval;
     }

@@ -8,11 +8,13 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.subsystems.Swerve;
 import edu.wpi.first.wpilibj.Timer;
 
 public class Robot extends TimedRobot {
     private Vision vision;
     private Swerve drivetrain;
+    // Motors and drive system
     private final PWMSparkMax m_leftDrive = new PWMSparkMax(0);
     private final PWMSparkMax m_rightDrive = new PWMSparkMax(1);
     private final DifferentialDrive m_robotDrive = new DifferentialDrive(m_leftDrive::set, m_rightDrive::set);
@@ -38,6 +40,7 @@ public class Robot extends TimedRobot {
         CommandScheduler.getInstance().run();
 
         vision.periodic();
+
         SmartDashboard.putNumber("Robot X Position", drivetrain.poseEstimator.getEstimatedPosition().getX());
         SmartDashboard.putNumber("Robot Y Position", drivetrain.poseEstimator.getEstimatedPosition().getY());
         SmartDashboard.putNumber("Robot Rotation",
@@ -51,7 +54,7 @@ public class Robot extends TimedRobot {
     }
 
     /** This function is called periodically during autonomous. */
-    @Override
+    @Override   
     public void autonomousPeriodic() {
         // Drive for 2 seconds
         if (m_timer.get() < 2.0) {
@@ -61,6 +64,7 @@ public class Robot extends TimedRobot {
             m_robotDrive.stopMotor(); // stop robot
         }
     }
+
     /** This function is called periodically during teleoperated mode. */
     @Override
     public void teleopPeriodic() {

@@ -7,7 +7,6 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
-// import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
@@ -22,23 +21,9 @@ public class Constants {
                                 .SDSMK4i(driveGearRatios.SDSMK4i_L2);
                 public static final double angleGearRatio = chosenModule.angleGearRatio;
                 public static final double kMaxSpeedMetersPerSecond = 4.8;
-
-                public static final boolean invertGyro = true; // Always ensure Gyro is CCW+ CW-
+                public static final double kMaxAngularSpeed = Units.rotationsToRadians(2);
                 public static final double kTrackWidth = Units.inchesToMeters(19);
                 public static final double kTrackLength = Units.inchesToMeters(20.75);
-                public static final double kRobotWidth = Units.inchesToMeters(25 + 3.25 * 2);
-                public static final double kRobotLength = Units.inchesToMeters(25 + 3.25 * 2);
-                public static final double kMaxLinearSpeed = Units.feetToMeters(15.5);
-                public static final double kMaxAngularSpeed = Units.rotationsToRadians(2);
-                public static final double kWheelDiameter = Units.inchesToMeters(4);
-                public static final double kWheelCircumference = kWheelDiameter * Math.PI;
-
-                public static final double kDriveGearRatio = 6.75; // 6.75:1 SDS MK4 L2 ratio
-                public static final double kSteerGearRatio = 12.8; // 12.8:1
-
-                public static final double kDriveDistPerPulse = kWheelCircumference / 1024 / kDriveGearRatio;
-                public static final double kSteerRadPerPulse = 2 * Math.PI / 1024;
-
                 public enum ModuleConstants {
                         // Configuration for each swerve module
                         FL( // Front left
@@ -85,12 +70,12 @@ public class Constants {
 
         public static final class MotorConstants {
                 public static final int kDrivingMotorPinionTeeth = 14;
-
                 public static final double kDrivingMotorFreeSpeedRps = NeoMotorConstants.kFreeSpeedRpm / 60;
                 public static final double kWheelDiameterMeters = Units.inchesToMeters(4);
                 public static final double kWheelCircumferenceMeters = kWheelDiameterMeters * Math.PI;
-
                 public static final double kDrivingMotorReduction = (45.0 * 22) / (kDrivingMotorPinionTeeth * 15);
+
+                
                 public static final double kDriveWheelFreeSpeedRps = (kDrivingMotorFreeSpeedRps
                                 * kWheelCircumferenceMeters)
                                 / kDrivingMotorReduction;
